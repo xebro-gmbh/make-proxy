@@ -8,11 +8,14 @@ services:
     environment:
       XO_SERVER_NAME: ${XO_SERVER_NAME}
     volumes:
-      # server template (envsubst by the official nginx image)
-      - ${PROXY_DIR_ABS}templates/:/etc/nginx/templates/:ro
+      # template sources at neutral paths; the entrypoint drop-in copies
+      # them into /etc/nginx/templates/ before envsubst runs (a nested
+      # mount inside a read-only mount is not possible)
+      - ${PROXY_DIR_ABS}templates/:/templates-src/:ro
       # route snippets: app bundles drop their *.conf.template here during
       # <bundle>.install; nginx renders them into conf.d/routes/
-      - ${XO_CONFIG_DIR}/proxy/:/etc/nginx/templates/routes/:ro
+      - ${XO_CONFIG_DIR}/proxy/:/routes-src/:ro
+      - ${PROXY_DIR_ABS}entrypoint.d/10-collect-templates.sh:/docker-entrypoint.d/10-collect-templates.sh:ro
       # TLS certs from core/generate_certs.sh (runs in docker.up)
       - ${XO_CONFIG_DIR}/cert/:/etc/nginx/certs/:ro
     env_file:
