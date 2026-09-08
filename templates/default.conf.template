@@ -1,0 +1,32 @@
+# GENERIERT via envsubst (offizielles nginx-Image) — Quelle:
+# docker/proxy/templates/default.conf.template. Routen kennen die App-Bundles
+# selbst: sie legen bei <bundle>.install ihr Snippet in docker/config/proxy/
+# ab (siehe include unten). Der Proxy selbst ist app-agnostisch.
+
+server {
+    listen 80;
+    server_name ${XO_SERVER_NAME};
+
+    # Healthcheck ohne Redirect (busybox wget folgt sonst ins Leere)
+    location = /healthz {
+        access_log off;
+        return 200;
+    }
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name ${XO_SERVER_NAME};
+
+    ssl_certificate     /etc/nginx/certs/local.crt;
+    ssl_certificate_key /etc/nginx/certs/local.key;
+
+    client_max_body_size 64m;
+
+    include /etc/nginx/conf.d/routes/*.conf;
+}

@@ -1,0 +1,5 @@
+services:
+  proxy:
+    depends_on:
+      shopware:
+        condition: service_started

@@ -1,0 +1,33 @@
+services:
+  proxy:
+    image: nginx:1.29-alpine
+    container_name: ${XO_PROJECT_NAME}-proxy
+    ports:
+      - "${XO_PROXY_HTTP_PORT:-80}:80"
+      - "${XO_PROXY_HTTPS_PORT:-443}:443"
+    environment:
+      XO_SERVER_NAME: ${XO_SERVER_NAME}
+    volumes:
+      # Server-Template (envsubst durch das offizielle nginx-Image)
+      - ${PROXY_DIR_ABS}templates/:/etc/nginx/templates/:ro
+      # Route-Snippets: App-Bundles legen bei <bundle>.install ihre
+      # *.conf.template hier ab; nginx rendert sie nach conf.d/routes/
+      - ${XO_CONFIG_DIR}/proxy/:/etc/nginx/templates/routes/:ro
+      # TLS-Certs aus core/generate_certs.sh (läuft in docker.up)
+      - ${XO_CONFIG_DIR}/cert/:/etc/nginx/certs/:ro
+    env_file:
+      - ${XO_ROOT_DIR}/.env
+      - ${XO_ROOT_DIR}/.env.local
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+networks:
+  default:
+    external: true
+    name: ${XO_PROJECT_NAME}
