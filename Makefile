@@ -12,6 +12,9 @@
 PROXY_DIR := $(patsubst $(XO_ROOT_DIR)/%,./%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 PROXY_DIR_ABS := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
+# ":<port>" when the published TLS port is not 443 — redirects must carry it
+XO_PROXY_TLS_SUFFIX := $(if $(filter-out 443,${XO_PROXY_HTTPS_PORT}),:${XO_PROXY_HTTPS_PORT})
+
 proxy.help:
 	$(call add_help,${PROXY_DIR}Makefile,"proxy")
 

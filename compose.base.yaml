@@ -7,6 +7,9 @@ services:
       - "${XO_PROXY_HTTPS_PORT:-443}:443"
     environment:
       XO_SERVER_NAME: ${XO_SERVER_NAME}
+      # ":<port>" when the TLS port is not 443, empty otherwise (computed
+      # in the proxy Makefile) — used for the HTTP->HTTPS redirect
+      XO_PROXY_TLS_SUFFIX: ${XO_PROXY_TLS_SUFFIX:-}
     volumes:
       # template sources at neutral paths; the entrypoint drop-in copies
       # them into /etc/nginx/templates/ before envsubst runs (a nested
