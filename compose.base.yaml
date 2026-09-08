@@ -8,12 +8,12 @@ services:
     environment:
       XO_SERVER_NAME: ${XO_SERVER_NAME}
     volumes:
-      # Server-Template (envsubst durch das offizielle nginx-Image)
+      # server template (envsubst by the official nginx image)
       - ${PROXY_DIR_ABS}templates/:/etc/nginx/templates/:ro
-      # Route-Snippets: App-Bundles legen bei <bundle>.install ihre
-      # *.conf.template hier ab; nginx rendert sie nach conf.d/routes/
+      # route snippets: app bundles drop their *.conf.template here during
+      # <bundle>.install; nginx renders them into conf.d/routes/
       - ${XO_CONFIG_DIR}/proxy/:/etc/nginx/templates/routes/:ro
-      # TLS-Certs aus core/generate_certs.sh (läuft in docker.up)
+      # TLS certs from core/generate_certs.sh (runs in docker.up)
       - ${XO_CONFIG_DIR}/cert/:/etc/nginx/certs/:ro
     env_file:
       - ${XO_ROOT_DIR}/.env

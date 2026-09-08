@@ -1,10 +1,11 @@
 #--------------------------
 # xebro GmbH - proxy - 2.0.0
 #--------------------------
-# App-agnostischer TLS-Reverse-Proxy. Routen registrieren die App-Bundles
-# selbst: <bundle>.install legt ein *.conf.template in ${XO_CONFIG_DIR}/proxy/
-# ab, das nginx-Image rendert es per envsubst. Certs + /etc/hosts kommen aus
-# core/generate_certs.sh (XO_SERVER_NAME), läuft automatisch in docker.up.
+# App-agnostic TLS reverse proxy. App bundles register their own routes:
+# <bundle>.install drops a *.conf.template into ${XO_CONFIG_DIR}/proxy/,
+# the nginx image renders it via envsubst. Certs + /etc/hosts come from
+# core/generate_certs.sh (XO_SERVER_NAME), which runs automatically in
+# docker.up.
 
 .PHONY: proxy.help proxy.logs proxy.bash proxy.restart proxy.install proxy.up proxy.down proxy.routes proxy.test proxy.post_start
 
@@ -33,7 +34,7 @@ proxy.routes: ## List registered route snippets
 	@ls -1 ${XO_CONFIG_DIR}/proxy/ 2>/dev/null || echo "no routes registered"
 
 proxy.test: ## Smoke-test the proxy routing (HTTP redirect + HTTPS reachable)
-	@curl -ksSo /dev/null -w "http  -> %{http_code} (301 erwartet)\n" http://${XO_SERVER_NAME}:${XO_PROXY_HTTP_PORT}/
+	@curl -ksSo /dev/null -w "http  -> %{http_code} (301 expected)\n" http://${XO_SERVER_NAME}:${XO_PROXY_HTTP_PORT}/
 	@curl -ksSo /dev/null -w "https -> %{http_code}\n" https://${XO_SERVER_NAME}:${XO_PROXY_HTTPS_PORT}/
 
 proxy.install:

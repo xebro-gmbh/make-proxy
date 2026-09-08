@@ -1,20 +1,22 @@
 # make-proxy
 
-App-agnostischer TLS-Reverse-Proxy für das xebro-Dev-Setup (`make-core`).
-nginx terminiert HTTPS unter `https://${XO_SERVER_NAME}` und leitet HTTP per
-301 um. Zertifikat und `/etc/hosts`-Eintrag erzeugt `core/generate_certs.sh`
-automatisch in `docker.up` (mkcert bevorzugt, sonst openssl).
+App-agnostic TLS reverse proxy for the xebro dev setup (`make-core`).
+nginx terminates HTTPS at `https://${XO_SERVER_NAME}` and redirects HTTP with
+a 301. Certificate and `/etc/hosts` entry are created automatically by
+`core/generate_certs.sh` during `docker.up` (mkcert preferred, openssl as
+fallback).
 
-## Prinzip: Bundles bringen ihre Route mit
+## Principle: bundles bring their own route
 
-Der Proxy kennt keine Anwendungen. App-Bundles legen bei `<bundle>.install`
-ein Route-Snippet in `docker/config/proxy/` ab (`NN-<name>.conf.template`,
-Nummernpräfix = Ordnung). Das nginx-Image rendert die Templates per envsubst —
-Env-Variablen wie `${XO_SHOP_PATH_PREFIX}` stehen zur Verfügung (`.env` +
-`.env.local` werden in den Container gereicht), nginx-Laufzeitvariablen
-(`$host`, `$request_uri`, …) bleiben unangetastet.
+The proxy knows nothing about applications. App bundles drop a route snippet
+into `docker/config/proxy/` during `<bundle>.install`
+(`NN-<name>.conf.template`, numeric prefix = ordering). The nginx image
+renders the templates via envsubst — environment variables like
+`${XO_SHOP_PATH_PREFIX}` are available (`.env` + `.env.local` are passed into
+the container), nginx runtime variables (`$host`, `$request_uri`, …) are left
+untouched.
 
-Beispiel (`90-wordpress.conf.template`):
+Example (`90-wordpress.conf.template`):
 
 ```nginx
 location / {
@@ -26,25 +28,25 @@ location / {
 }
 ```
 
-Die `compose.<modul>.yaml`-Overlays (wordpress, shopware) ergänzen
-`depends_on` automatisch, wenn das jeweilige Modul im Projekt liegt
+The `compose.<module>.yaml` overlays (wordpress, shopware) add `depends_on`
+automatically when the respective module is present in the project
 (`make core.generate`).
 
 ## Targets
 
 ```bash
-make proxy.routes    # registrierte Route-Snippets anzeigen
-make proxy.test      # Redirect + HTTPS-Erreichbarkeit prüfen
-make proxy.restart   # neue Snippets laden
+make proxy.routes    # list registered route snippets
+make proxy.test      # check redirect + HTTPS reachability
+make proxy.restart   # load new snippets
 make proxy.logs
 ```
 
-## Environment-Variablen
+## Environment variables
 
-Seeded in `.env` (bestehende Werte bleiben erhalten):
-`XO_SERVER_NAME` (Default `${XO_PROJECT_NAME}.test`), `XO_PROXY_HTTP_PORT`
-(80), `XO_PROXY_HTTPS_PORT` (443). Belegte Ports in `.env.local`
-überschreiben — dann gehört der Port auch in die App-URLs.
+Seeded into `.env` (existing values are kept):
+`XO_SERVER_NAME` (default `${XO_PROJECT_NAME}.test`), `XO_PROXY_HTTP_PORT`
+(80), `XO_PROXY_HTTPS_PORT` (443). Override occupied ports in `.env.local` —
+the port then also belongs into the app URLs.
 
 ## License
 

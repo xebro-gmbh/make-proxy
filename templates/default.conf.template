@@ -1,13 +1,13 @@
-# GENERIERT via envsubst (offizielles nginx-Image) — Quelle:
-# docker/proxy/templates/default.conf.template. Routen kennen die App-Bundles
-# selbst: sie legen bei <bundle>.install ihr Snippet in docker/config/proxy/
-# ab (siehe include unten). Der Proxy selbst ist app-agnostisch.
+# RENDERED via envsubst (official nginx image) — source:
+# docker/proxy/templates/default.conf.template. The app bundles know their
+# own routes: <bundle>.install drops a snippet into docker/config/proxy/
+# (see include below). The proxy itself is app-agnostic.
 
 server {
     listen 80;
     server_name ${XO_SERVER_NAME};
 
-    # Healthcheck ohne Redirect (busybox wget folgt sonst ins Leere)
+    # healthcheck without redirect (busybox wget would follow it nowhere)
     location = /healthz {
         access_log off;
         return 200;
